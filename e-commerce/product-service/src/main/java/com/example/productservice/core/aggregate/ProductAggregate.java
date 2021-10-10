@@ -1,5 +1,7 @@
 package com.example.productservice.core.aggregate;
 
+import com.example.coreapi.command.ReserveProductCommand;
+import com.example.coreapi.event.ProductReservedEvent;
 import com.example.productservice.command.model.CreateProductCommand;
 import com.example.productservice.event.model.ProductCreatedEvent;
 import lombok.*;
@@ -34,17 +36,9 @@ public class ProductAggregate {
         if (createProductCommand.getName() == null || createProductCommand.getName().isBlank()) {
             throw new IllegalArgumentException("Name cannot be null or empty");
         }
-        
+
         final var productCreatedEvent = buildProductCreatedEvent(createProductCommand);
         AggregateLifecycle.apply(productCreatedEvent);
-    }
-
-    @EventSourcingHandler
-    public void on(ProductCreatedEvent productCreatedEvent) {
-        this.id = productCreatedEvent.getId();
-        this.price = productCreatedEvent.getPrice();
-        this.name = productCreatedEvent.getName();
-        this.quantity = productCreatedEvent.getQuantity();
     }
 
     private ProductCreatedEvent buildProductCreatedEvent(final CreateProductCommand createProductCommand) {
@@ -56,5 +50,44 @@ public class ProductAggregate {
                 .build();
     }
 
+    @CommandHandler
+    public void handle(final ReserveProductCommand reserveProductCommand) {
+        if (reserveProductCommand.getQuantity() <= 0) {
+            throw new IllegalArgumentException("Quantity cannot be less or equal than zero");
+        }
 
+        if (reserveProductCommand.getProductId() == null || reserveProductCommand.getProductId().isBlank()) {
+            throw new IllegalArgumentException("ProductId cannot be null or empty");
+        }
+
+        if (reserveProductCommand.getOrderId() == null || reserveProductCommand.getOrderId().isBlank()) {
+            throw new IllegalArgumentException("OrderId cannot be null or empty");
+        }
+
+        final var productReservedEvent = buildProductReservedEvent(reserveProductCommand);
+        AggregateLifecycle.apply(productReservedEvent);
+        log.info("Product {} Reserved {} unit For Order {} ", reserveProductCommand.getProductId(),
+                reserveProductCommand.getQuantity(), reserveProductCommand.getOrderId());
+    }
+
+    private ProductReservedEvent buildProductReservedEvent(final ReserveProductCommand reserveProductCommand) {
+        return ProductReservedEvent.builder()
+                .productId(reserveProductCommand.getProductId())
+                .orderId(reserveProductCommand.getOrderId())
+                .quantity(reserveProductCommand.getQuantity())
+                .build();
+    }
+
+    @EventSourcingHandler
+    public void on(ProductCreatedEvent productCreatedEvent) {
+        this.id = productCreatedEvent.getId();
+        this.price = productCreatedEvent.getPrice();
+        this.name = productCreatedEvent.getName();
+        this.quantity = productCreatedEvent.getQuantity();
+    }
+
+    @EventSourcingHandler
+    public void on(ProductReservedEvent productReservedEvent) {
+        this.quantity = this.quantity - productReservedEvent.getQuantity();
+    }
 }

@@ -37,8 +37,6 @@ H
 discovery-server/pom.xml,2/c/2c58c7878e43d126fc56cae853d5b06de57d0b3e
 å
 \product-service/src/test/java/com/example/productservice/ProductServiceApplicationTests.java,5/f/5f646e5241b87410babcc423fa6c1627a5f61939
-è
-_product-service/src/main/java/com/example/productservice/core/repository/ProductRepository.java,f/e/fe3938e033c7d0ed5ee57f03dacdef5ea41e60f4
 Ñ
 Tproduct-service/src/main/java/com/example/productservice/query/model/ProductDTO.java,6/9/69237ab3dc89bce6ff5dad0f62bca0a753a4cadc
 â

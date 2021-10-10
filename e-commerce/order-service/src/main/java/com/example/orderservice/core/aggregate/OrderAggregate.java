@@ -1,7 +1,9 @@
 package com.example.orderservice.core.aggregate;
 
+import com.example.orderservice.command.model.ApproveOrderCommand;
 import com.example.orderservice.command.model.CreateOrderCommand;
 import com.example.orderservice.core.enums.OrderStatus;
+import com.example.orderservice.event.model.OrderApprovedEvent;
 import com.example.orderservice.event.model.OrderCreatedEvent;
 import lombok.*;
 import org.axonframework.commandhandling.CommandHandler;
@@ -54,6 +56,18 @@ public class OrderAggregate {
                 .build();
     }
 
+    @CommandHandler
+    public void handle(final ApproveOrderCommand approveOrderCommand) {
+        final var orderApprovedEvent = buildOrderApprovedEvent(approveOrderCommand);
+        AggregateLifecycle.apply(orderApprovedEvent);
+    }
+
+    private OrderApprovedEvent buildOrderApprovedEvent(final ApproveOrderCommand approveOrderCommand) {
+        return OrderApprovedEvent.builder()
+                .id(approveOrderCommand.getId())
+                .build();
+    }
+
     @EventSourcingHandler
     public void handle(final OrderCreatedEvent orderCreatedEvent) {
         this.id = orderCreatedEvent.getId();
@@ -62,5 +76,10 @@ public class OrderAggregate {
         this.addressId = orderCreatedEvent.getAddressId();
         this.orderStatus = orderCreatedEvent.getOrderStatus();
         this.userId = orderCreatedEvent.getUserId();
+    }
+
+    @EventSourcingHandler
+    public void handle(final OrderApprovedEvent orderApprovedEvent) {
+        this.orderStatus = OrderStatus.APPROVED;
     }
 }

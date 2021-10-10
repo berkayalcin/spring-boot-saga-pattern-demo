@@ -1,5 +1,6 @@
 package com.example.productservice.event.handler;
 
+import com.example.coreapi.event.ProductReservedEvent;
 import com.example.productservice.core.entity.Product;
 import com.example.productservice.core.repository.ProductRepository;
 import com.example.productservice.event.model.ProductCreatedEvent;
@@ -27,6 +28,14 @@ public class ProductEventHandler {
                 .name(productCreatedEvent.getName())
                 .build();
 
+        productRepository.save(product);
+    }
+
+    @SneakyThrows
+    @EventHandler
+    public void on(final ProductReservedEvent productReservedEvent) {
+        final var product = productRepository.findProductById(productReservedEvent.getProductId());
+        product.setQuantity(product.getQuantity() - productReservedEvent.getQuantity());
         productRepository.save(product);
     }
 
