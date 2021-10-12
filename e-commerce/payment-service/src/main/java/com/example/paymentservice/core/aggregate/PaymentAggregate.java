@@ -1,6 +1,8 @@
 package com.example.paymentservice.core.aggregate;
 
 import com.example.coreapi.command.ProcessPaymentCommand;
+import com.example.coreapi.command.ReversePaymentCommand;
+import com.example.coreapi.event.PaymentCancelledEvent;
 import com.example.coreapi.event.PaymentProcessedEvent;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +42,25 @@ public class PaymentAggregate {
                 .build();
     }
 
+    @CommandHandler
+    public void handle(final ReversePaymentCommand reversePaymentCommand) {
+        final var paymentCancelledEvent = PaymentCancelledEvent.builder()
+                .paymentId(reversePaymentCommand.getPaymentId())
+                .orderId(reversePaymentCommand.getOrderId())
+                .build();
+        AggregateLifecycle.apply(paymentCancelledEvent);
+    }
+
     @EventSourcingHandler
     public void on(final PaymentProcessedEvent paymentProcessedEvent) {
         this.paymentId = paymentProcessedEvent.getPaymentId();
         this.orderId = paymentProcessedEvent.getOrderId();
         this.userId = paymentProcessedEvent.getUserId();
         this.ibanNumber = paymentProcessedEvent.getIbanNumber();
+    }
+
+    @EventSourcingHandler
+    public void on(final PaymentCancelledEvent paymentProcessedEvent) {
+        log.info("Payment status updated as cancelled");
     }
 }

@@ -1,6 +1,6 @@
-package com.example.orderservice.core.entity;
+package com.example.paymentservice.core.entity;
 
-import com.example.orderservice.core.enums.OrderStatus;
+import com.example.paymentservice.core.enums.OrderStatus;
 import lombok.*;
 
 import javax.persistence.*;

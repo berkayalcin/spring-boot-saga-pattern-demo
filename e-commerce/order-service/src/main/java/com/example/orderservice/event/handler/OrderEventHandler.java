@@ -1,9 +1,12 @@
 package com.example.orderservice.event.handler;
 
+import com.example.coreapi.event.PaymentCancelledEvent;
+import com.example.coreapi.event.PaymentProcessedEvent;
 import com.example.orderservice.core.entity.Order;
 import com.example.orderservice.core.enums.OrderStatus;
 import com.example.orderservice.core.repository.OrderRepository;
 import com.example.orderservice.event.model.OrderApprovedEvent;
+import com.example.orderservice.event.model.OrderCancelledEvent;
 import com.example.orderservice.event.model.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
@@ -37,6 +40,13 @@ public class OrderEventHandler {
     public void on(final OrderApprovedEvent orderApprovedEvent) {
         final var order = orderRepository.findOrderById(orderApprovedEvent.getId());
         order.setOrderStatus(OrderStatus.APPROVED);
+        orderRepository.save(order);
+    }
+
+    @EventHandler
+    public void on(final OrderCancelledEvent orderCancelledEvent) {
+        final var order = orderRepository.findOrderById(orderCancelledEvent.getId());
+        order.setOrderStatus(OrderStatus.REJECTED);
         orderRepository.save(order);
     }
 }

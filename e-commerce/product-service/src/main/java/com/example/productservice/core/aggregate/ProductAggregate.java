@@ -1,6 +1,8 @@
 package com.example.productservice.core.aggregate;
 
 import com.example.coreapi.command.ReserveProductCommand;
+import com.example.coreapi.command.ReverseInventoryCommand;
+import com.example.coreapi.event.InventoryReservationCancelledEvent;
 import com.example.coreapi.event.ProductReservedEvent;
 import com.example.productservice.command.model.CreateProductCommand;
 import com.example.productservice.event.model.ProductCreatedEvent;
@@ -78,8 +80,18 @@ public class ProductAggregate {
                 .build();
     }
 
+    @CommandHandler
+    public void handle(final ReverseInventoryCommand reverseInventoryCommand) {
+        final var inventoryReservationCancelledEvent = InventoryReservationCancelledEvent.builder()
+                .orderId(reverseInventoryCommand.getOrderId())
+                .productId(reverseInventoryCommand.getProductId())
+                .quantity(reverseInventoryCommand.getQuantity())
+                .build();
+        AggregateLifecycle.apply(inventoryReservationCancelledEvent);
+    }
+
     @EventSourcingHandler
-    public void on(ProductCreatedEvent productCreatedEvent) {
+    public void on(final ProductCreatedEvent productCreatedEvent) {
         this.id = productCreatedEvent.getId();
         this.price = productCreatedEvent.getPrice();
         this.name = productCreatedEvent.getName();
@@ -87,7 +99,12 @@ public class ProductAggregate {
     }
 
     @EventSourcingHandler
-    public void on(ProductReservedEvent productReservedEvent) {
+    public void on(final ProductReservedEvent productReservedEvent) {
         this.quantity = this.quantity - productReservedEvent.getQuantity();
+    }
+
+    @EventSourcingHandler
+    public void on(final InventoryReservationCancelledEvent inventoryReservationCancelledEvent) {
+        this.quantity = this.quantity + inventoryReservationCancelledEvent.getQuantity();
     }
 }

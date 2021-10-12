@@ -1,5 +1,6 @@
 package com.example.productservice.event.handler;
 
+import com.example.coreapi.event.InventoryReservationCancelledEvent;
 import com.example.coreapi.event.ProductReservedEvent;
 import com.example.productservice.core.entity.Product;
 import com.example.productservice.core.repository.ProductRepository;
@@ -36,6 +37,14 @@ public class ProductEventHandler {
     public void on(final ProductReservedEvent productReservedEvent) {
         final var product = productRepository.findProductById(productReservedEvent.getProductId());
         product.setQuantity(product.getQuantity() - productReservedEvent.getQuantity());
+        productRepository.save(product);
+    }
+
+    @SneakyThrows
+    @EventHandler
+    public void on(final InventoryReservationCancelledEvent inventoryReservationCancelledEvent) {
+        final var product = productRepository.findProductById(inventoryReservationCancelledEvent.getProductId());
+        product.setQuantity(product.getQuantity() + inventoryReservationCancelledEvent.getQuantity());
         productRepository.save(product);
     }
 
